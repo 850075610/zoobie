@@ -5,35 +5,95 @@ class Game {
         this.gridSize = 75;
         this.rows = 8;
         this.cols = 12;
-        
+
         this.sunCount = 100;
         this.zombieCount = 0;
         this.waveCount = 1;
         this.selectedPlant = 'sunflower';
-        
+
         this.plants = [];
         this.zombies = [];
         this.bullets = [];
         this.suns = [];
-        
+
         this.isRunning = false;
         this.isPaused = false;
         this.lastTime = 0;
         this.zombieSpawnTimer = 0;
         this.sunSpawnTimer = 0;
-        
+
+        this.difficulty = 'normal';
+        this.gameStarted = false;
+
         this.plantCosts = {
             sunflower: 50,
             peashooter: 100,
             wallnut: 50
         };
-        
+
+        this.difficultySettings = {
+            easy: {
+                name: '简单',
+                sunCount: 200,
+                zombieSpeed: 0.2,
+                zombieHealth: 80,
+                zombieSpawnInterval: 8000,
+                sunSpawnInterval: 6000,
+                sunValue: 30
+            },
+            normal: {
+                name: '中等',
+                sunCount: 100,
+                zombieSpeed: 0.3,
+                zombieHealth: 100,
+                zombieSpawnInterval: 5000,
+                sunSpawnInterval: 8000,
+                sunValue: 25
+            },
+            hard: {
+                name: '困难',
+                sunCount: 50,
+                zombieSpeed: 0.5,
+                zombieHealth: 120,
+                zombieSpawnInterval: 3000,
+                sunSpawnInterval: 10000,
+                sunValue: 20
+            }
+        };
+
         this.init();
     }
     
     init() {
+        this.setupDifficultySelection();
         this.setupEventListeners();
         this.drawGrid();
+    }
+
+    setupDifficultySelection() {
+        const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+        difficultyButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const difficulty = e.target.dataset.difficulty;
+                this.setDifficulty(difficulty);
+            });
+        });
+    }
+
+    setDifficulty(difficulty) {
+        this.difficulty = difficulty;
+        const settings = this.difficultySettings[difficulty];
+
+        // 显示游戏界面，隐藏难度选择界面
+        document.getElementById('difficultyScreen').style.display = 'none';
+        document.getElementById('gameScreen').style.display = 'block';
+
+        // 根据难度设置初始值
+        this.sunCount = settings.sunCount;
+        document.getElementById('difficultyDisplay').textContent = settings.name;
+
+        this.updateUI();
+        this.gameStarted = true;
     }
     
     setupEventListeners() {
@@ -78,6 +138,10 @@ class Game {
     }
     
     start() {
+        if (!this.gameStarted) {
+            alert('请先选择游戏难度！');
+            return;
+        }
         this.isRunning = true;
         this.isPaused = false;
         this.gameLoop();
@@ -93,6 +157,7 @@ class Game {
     reset() {
         this.isRunning = false;
         this.isPaused = false;
+        this.gameStarted = false;
         this.sunCount = 100;
         this.zombieCount = 0;
         this.waveCount = 1;
@@ -102,6 +167,11 @@ class Game {
         this.suns = [];
         this.zombieSpawnTimer = 0;
         this.sunSpawnTimer = 0;
+
+        // 显示难度选择界面，隐藏游戏界面
+        document.getElementById('difficultyScreen').style.display = 'block';
+        document.getElementById('gameScreen').style.display = 'none';
+
         this.updateUI();
         this.drawGrid();
     }
@@ -119,16 +189,18 @@ class Game {
     }
     
     update(deltaTime) {
+        const settings = this.difficultySettings[this.difficulty];
+
         // 生成僵尸
         this.zombieSpawnTimer += deltaTime;
-        if (this.zombieSpawnTimer > 5000) {
+        if (this.zombieSpawnTimer > settings.zombieSpawnInterval) {
             this.spawnZombie();
             this.zombieSpawnTimer = 0;
         }
-        
+
         // 生成阳光
         this.sunSpawnTimer += deltaTime;
-        if (this.sunSpawnTimer > 8000) {
+        if (this.sunSpawnTimer > settings.sunSpawnInterval) {
             this.spawnSun();
             this.sunSpawnTimer = 0;
         }
@@ -238,7 +310,8 @@ class Game {
     
     collectSun(sun) {
         sun.collected = true;
-        this.sunCount += 25;
+        const settings = this.difficultySettings[this.difficulty];
+        this.sunCount += settings.sunValue;
         this.updateUI();
     }
     

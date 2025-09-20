@@ -66,31 +66,107 @@
         .plant-btn.active {
             background: #FF6347;
         }
+
+        #difficultyScreen {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #difficultyButtons {
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .difficulty-btn {
+            padding: 15px 25px;
+            font-size: 18px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .difficulty-btn[data-difficulty="easy"] {
+            background: #4CAF50;
+        }
+
+        .difficulty-btn[data-difficulty="normal"] {
+            background: #FF9800;
+        }
+
+        .difficulty-btn[data-difficulty="hard"] {
+            background: #F44336;
+        }
+
+        #difficultyInfo {
+            text-align: left;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        #difficultyInfo p {
+            margin: 5px 0;
+            color: #333;
+        }
     </style>
 </head>
 <body>
     <h1>🌻 植物大战僵尸 🧟</h1>
-    
-    <div class="plant-selector">
-        <button class="plant-btn active" data-plant="sunflower">🌻 向日葵 (50阳光)</button>
-        <button class="plant-btn" data-plant="peashooter">🌱 豌豆射手 (100阳光)</button>
-        <button class="plant-btn" data-plant="wallnut">🥜 坚果墙 (50阳光)</button>
+
+    <!-- 难度选择界面 -->
+    <div id="difficultyScreen">
+        <h2>选择游戏难度</h2>
+        <div id="difficultyButtons">
+            <button class="difficulty-btn" data-difficulty="easy">🟢 简单</button>
+            <button class="difficulty-btn" data-difficulty="normal">🟡 中等</button>
+            <button class="difficulty-btn" data-difficulty="hard">🔴 困难</button>
+        </div>
+        <div id="difficultyInfo">
+            <p><strong>简单:</strong> 僵尸移动缓慢，生成间隔长，阳光充足</p>
+            <p><strong>中等:</strong> 标准游戏体验</p>
+            <p><strong>困难:</strong> 僵尸移动快速，生成频繁，阳光稀缺</p>
+        </div>
     </div>
+
+    <!-- 游戏界面（初始隐藏） -->
+    <div id="gameScreen" style="display: none;">
+        <div class="plant-selector">
+            <button class="plant-btn active" data-plant="sunflower">🌻 向日葵 (50阳光)</button>
+            <button class="plant-btn" data-plant="peashooter">🌱 豌豆射手 (100阳光)</button>
+            <button class="plant-btn" data-plant="wallnut">🥜 坚果墙 (50阳光)</button>
+        </div>
     
     <canvas id="gameCanvas" width="900" height="600"></canvas>
-    
-    <div id="controls">
-        <button id="startBtn">开始游戏</button>
-        <button id="pauseBtn">暂停</button>
-        <button id="resetBtn">重置</button>
+
+        <div id="controls">
+            <button id="startBtn">开始游戏</button>
+            <button id="pauseBtn">暂停</button>
+            <button id="resetBtn">重置</button>
+        </div>
+
+        <div id="info">
+            阳光: <span id="sunCount">100</span> |
+            僵尸击败: <span id="zombieCount">0</span> |
+            波次: <span id="waveCount">1</span> |
+            难度: <span id="difficultyDisplay">中等</span>
+        </div>
     </div>
-    
-    <div id="info">
-        阳光: <span id="sunCount">100</span> | 
-        僵尸击败: <span id="zombieCount">0</span> | 
-        波次: <span id="waveCount">1</span>
-    </div>
-    
+
     <script src="plants.js"></script>
     <script src="zombies.js"></script>
     <script src="bullets.js"></script>

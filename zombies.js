@@ -4,9 +4,13 @@ class Zombie extends GameObject {
         super(x, row * game.gridSize + 10, 50, 60);
         this.game = game;
         this.gridY = row;
-        this.speed = 0.3;
-        this.health = 100;
-        this.maxHealth = 100;
+
+        // 根据难度设置僵尸属性
+        const settings = game.difficultySettings[game.difficulty];
+        this.speed = settings.zombieSpeed;
+        this.health = settings.zombieHealth;
+        this.maxHealth = settings.zombieHealth;
+
         this.isAttacking = false;
         this.attackDamage = 1;
         this.attackTimer = 0;
