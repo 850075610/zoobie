@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>植物大战僵尸 - 简化版</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #87CEEB;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        h1 {
+            color: #2E8B57;
+            margin-bottom: 10px;
+        }
+        
+        #gameCanvas {
+            border: 3px solid #2E8B57;
+            background: #90EE90;
+            cursor: crosshair;
+        }
+        
+        #controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        #info {
+            margin-top: 10px;
+            font-size: 18px;
+            color: #2E8B57;
+        }
+        
+        .plant-selector {
+            margin: 10px 0;
+        }
+        
+        .plant-btn {
+            margin: 0 5px;
+            padding: 8px 15px;
+            background: #8B4513;
+        }
+        
+        .plant-btn.active {
+            background: #FF6347;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌻 植物大战僵尸 🧟</h1>
+    
+    <div class="plant-selector">
+        <button class="plant-btn active" data-plant="sunflower">🌻 向日葵 (50阳光)</button>
+        <button class="plant-btn" data-plant="peashooter">🌱 豌豆射手 (100阳光)</button>
+        <button class="plant-btn" data-plant="wallnut">🥜 坚果墙 (50阳光)</button>
+    </div>
+    
+    <canvas id="gameCanvas" width="900" height="600"></canvas>
+    
+    <div id="controls">
+        <button id="startBtn">开始游戏</button>
+        <button id="pauseBtn">暂停</button>
+        <button id="resetBtn">重置</button>
+    </div>
+    
+    <div id="info">
+        阳光: <span id="sunCount">100</span> | 
+        僵尸击败: <span id="zombieCount">0</span> | 
+        波次: <span id="waveCount">1</span>
+    </div>
+    
+    <script src="plants.js"></script>
+    <script src="zombies.js"></script>
+    <script src="bullets.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
