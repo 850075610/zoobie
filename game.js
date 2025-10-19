@@ -25,6 +25,13 @@ class Game {
         this.difficulty = 'normal';
         this.gameStarted = false;
 
+        // 新增：游戏计时和升级相关
+        this.gameStartTime = 0;
+        this.gameTime = 0;
+        this.zombiesPerWave = 10; // 每波僵尸数量
+        this.zombiesInCurrentWave = 0;
+        this.levelUpTriggered = false;
+
         this.plantCosts = {
             sunflower: 50,
             peashooter: 100,
@@ -35,7 +42,7 @@ class Game {
             easy: {
                 name: '简单',
                 sunCount: 200,
-                zombieSpeed: 0.2,
+                zombieSpeed: 0.35,  // 稍微加快简单等级的僵尸速度
                 zombieHealth: 80,
                 zombieSpawnInterval: 8000,
                 sunSpawnInterval: 6000,
@@ -53,7 +60,7 @@ class Game {
             hard: {
                 name: '困难',
                 sunCount: 50,
-                zombieSpeed: 0.5,
+                zombieSpeed: 0.4,  // 稍微放缓困难等级的僵尸速度
                 zombieHealth: 120,
                 zombieSpawnInterval: 3000,
                 sunSpawnInterval: 10000,
@@ -144,6 +151,9 @@ class Game {
         }
         this.isRunning = true;
         this.isPaused = false;
+        this.gameStartTime = Date.now(); // 记录游戏开始时间
+        this.gameTime = 0;
+        this.levelUpTriggered = false;
         this.gameLoop();
     }
     
@@ -168,6 +178,12 @@ class Game {
         this.zombieSpawnTimer = 0;
         this.sunSpawnTimer = 0;
 
+        // 重置升级相关变量
+        this.gameStartTime = 0;
+        this.gameTime = 0;
+        this.zombiesInCurrentWave = 0;
+        this.levelUpTriggered = false;
+
         // 显示难度选择界面，隐藏游戏界面
         document.getElementById('difficultyScreen').style.display = 'block';
         document.getElementById('gameScreen').style.display = 'none';
@@ -191,11 +207,20 @@ class Game {
     update(deltaTime) {
         const settings = this.difficultySettings[this.difficulty];
 
+        // 更新游戏时间
+        if (this.isRunning && !this.isPaused) {
+            this.gameTime += deltaTime;
+        }
+
+        // 检查升级条件
+        this.checkLevelUpConditions();
+
         // 生成僵尸
         this.zombieSpawnTimer += deltaTime;
         if (this.zombieSpawnTimer > settings.zombieSpawnInterval) {
             this.spawnZombie();
             this.zombieSpawnTimer = 0;
+            this.zombiesInCurrentWave++;
         }
 
         // 生成阳光
@@ -204,25 +229,25 @@ class Game {
             this.spawnSun();
             this.sunSpawnTimer = 0;
         }
-        
+
         // 更新植物
         this.plants.forEach(plant => plant.update(deltaTime));
-        
+
         // 更新僵尸
         this.zombies.forEach(zombie => zombie.update(deltaTime));
-        
+
         // 更新子弹
         this.bullets.forEach(bullet => bullet.update(deltaTime));
-        
+
         // 更新阳光
         this.suns.forEach(sun => sun.update(deltaTime));
-        
+
         // 碰撞检测
         this.checkCollisions();
-        
+
         // 清理死亡对象
         this.cleanup();
-        
+
         // 检查游戏结束
         this.checkGameOver();
     }
@@ -375,6 +400,79 @@ class Game {
             this.isRunning = false;
             alert('游戏结束！僵尸吃掉了你的脑子！');
         }
+    }
+
+    checkLevelUpConditions() {
+        if (this.levelUpTriggered) return;
+
+        // 检查时间条件：5分钟（300000毫秒）
+        const timeCondition = this.gameTime >= 300000;
+
+        // 检查击败僵尸数量条件：30个僵尸
+        const zombieCondition = this.zombieCount >= 30;
+
+        if (timeCondition || zombieCondition) {
+            this.triggerLevelUp();
+        }
+    }
+
+    triggerLevelUp() {
+        this.levelUpTriggered = true;
+        this.isRunning = false;
+
+        // 显示升级提示
+        const currentDifficultyIndex = Object.keys(this.difficultySettings).indexOf(this.difficulty);
+        const nextDifficultyIndex = currentDifficultyIndex + 1;
+
+        if (nextDifficultyIndex < Object.keys(this.difficultySettings).length) {
+            const nextDifficulty = Object.keys(this.difficultySettings)[nextDifficultyIndex];
+            const nextDifficultyName = this.difficultySettings[nextDifficulty].name;
+
+            if (confirm(`恭喜！你已经成功保卫家园${Math.floor(this.gameTime / 60000)}分钟，击败了${this.zombieCount}个僵尸！\n\n是否进入下一难度等级：${nextDifficultyName}？`)) {
+                this.levelUp(nextDifficulty);
+            } else {
+                // 继续当前游戏
+                this.isRunning = true;
+                this.levelUpTriggered = false;
+            }
+        } else {
+            alert(`恭喜！你已经成功通关所有难度！\n\n游戏时间：${Math.floor(this.gameTime / 60000)}分钟\n击败僵尸：${this.zombieCount}个`);
+            this.reset();
+        }
+    }
+
+    levelUp(newDifficulty) {
+        // 保存阳光数量作为奖励
+        const savedSunCount = this.sunCount;
+
+        // 重置游戏状态
+        this.isRunning = false;
+        this.isPaused = false;
+        this.plants = [];
+        this.zombies = [];
+        this.bullets = [];
+        this.suns = [];
+        this.zombieSpawnTimer = 0;
+        this.sunSpawnTimer = 0;
+
+        // 清零游戏数据
+        this.zombieCount = 0;
+        this.waveCount = 1;
+        this.zombiesInCurrentWave = 0;
+
+        // 设置新难度
+        this.setDifficulty(newDifficulty);
+
+        // 恢复阳光奖励（保留80%）
+        this.sunCount = Math.floor(savedSunCount * 0.8);
+
+        // 重置升级触发器
+        this.levelUpTriggered = false;
+        this.gameTime = 0;
+        this.gameStartTime = Date.now();
+
+        this.updateUI();
+        this.drawGrid();
     }
     
     updateUI() {
